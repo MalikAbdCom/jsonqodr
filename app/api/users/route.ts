@@ -2,6 +2,20 @@ import { NextRequest, NextResponse } from 'next/server';
 import { db, users } from '@/db';
 import { eq } from 'drizzle-orm';
 
+// Helper function to add CORS headers to responses
+function corsHeaders() {
+  return {
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS, PATCH',
+    'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+  };
+}
+
+// Handle OPTIONS requests for CORS preflight
+export async function OPTIONS() {
+  return NextResponse.json({}, { headers: corsHeaders() });
+}
+
 // GET /api/users - Get all users
 export async function GET(request: NextRequest) {
   try {
@@ -14,12 +28,12 @@ export async function GET(request: NextRequest) {
       limit: limit,
     });
     
-    return NextResponse.json(allUsers);
+    return NextResponse.json(allUsers, { headers: corsHeaders() });
   } catch (error) {
     console.error('Error fetching users:', error);
     return NextResponse.json(
       { error: 'Failed to fetch users' },
-      { status: 500 }
+      { status: 500, headers: corsHeaders() }
     );
   }
 }
@@ -33,7 +47,7 @@ export async function POST(request: NextRequest) {
     if (!body.name || !body.username || !body.email) {
       return NextResponse.json(
         { error: 'Name, username, and email are required' },
-        { status: 400 }
+        { status: 400, headers: corsHeaders() }
       );
     }
     
@@ -55,12 +69,12 @@ export async function POST(request: NextRequest) {
       companyBs: body.companyBs || null,
     }).returning();
     
-    return NextResponse.json(newUser[0], { status: 201 });
+    return NextResponse.json(newUser[0], { status: 201, headers: corsHeaders() });
   } catch (error) {
     console.error('Error creating user:', error);
     return NextResponse.json(
       { error: 'Failed to create user' },
-      { status: 500 }
+      { status: 500, headers: corsHeaders() }
     );
   }
 }

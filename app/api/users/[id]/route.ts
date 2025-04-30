@@ -2,6 +2,20 @@ import { NextRequest, NextResponse } from "next/server";
 import { db, users } from "@/db";
 import { eq } from "drizzle-orm";
 
+// Helper function to add CORS headers to responses
+function corsHeaders() {
+  return {
+    "Access-Control-Allow-Origin": "*",
+    "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS, PATCH",
+    "Access-Control-Allow-Headers": "Content-Type, Authorization",
+  };
+}
+
+// Handle OPTIONS requests for CORS preflight
+export async function OPTIONS() {
+  return NextResponse.json({}, { headers: corsHeaders() });
+}
+
 // GET /api/users/:id - Get a specific user by ID
 export async function GET(
   request: NextRequest,
@@ -23,12 +37,12 @@ export async function GET(
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
-    return NextResponse.json(user);
+    return NextResponse.json(user, { headers: corsHeaders() });
   } catch (error) {
     console.error("Error fetching user:", error);
     return NextResponse.json(
       { error: "Failed to fetch user" },
-      { status: 500 }
+      { status: 500, headers: corsHeaders() }
     );
   }
 }
