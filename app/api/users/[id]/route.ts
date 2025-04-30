@@ -1,38 +1,33 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { db, users } from '@/db';
-import { eq } from 'drizzle-orm';
+import { NextRequest, NextResponse } from "next/server";
+import { db, users } from "@/db";
+import { eq } from "drizzle-orm";
 
 // GET /api/users/:id - Get a specific user by ID
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const id = parseInt((await params).id);
   try {
-    const id = parseInt(params.id);
-    
+    // const id = parseInt(params.id);
+
     if (isNaN(id)) {
-      return NextResponse.json(
-        { error: 'Invalid user ID' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "Invalid user ID" }, { status: 400 });
     }
-    
+
     const user = await db.query.users.findFirst({
       where: eq(users.id, id),
     });
-    
+
     if (!user) {
-      return NextResponse.json(
-        { error: 'User not found' },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
-    
+
     return NextResponse.json(user);
   } catch (error) {
-    console.error('Error fetching user:', error);
+    console.error("Error fetching user:", error);
     return NextResponse.json(
-      { error: 'Failed to fetch user' },
+      { error: "Failed to fetch user" },
       { status: 500 }
     );
   }
@@ -41,42 +36,37 @@ export async function GET(
 // PUT /api/users/:id - Update a user (replace all fields)
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const id = parseInt(params.id);
-    
+    const id = parseInt((await params).id);
+
     if (isNaN(id)) {
-      return NextResponse.json(
-        { error: 'Invalid user ID' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "Invalid user ID" }, { status: 400 });
     }
-    
+
     const body = await request.json();
-    
+
     // Validate required fields
     if (!body.name || !body.username || !body.email) {
       return NextResponse.json(
-        { error: 'Name, username, and email are required' },
+        { error: "Name, username, and email are required" },
         { status: 400 }
       );
     }
-    
+
     // Check if user exists
     const existingUser = await db.query.users.findFirst({
       where: eq(users.id, id),
     });
-    
+
     if (!existingUser) {
-      return NextResponse.json(
-        { error: 'User not found' },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
-    
+
     // Update user
-    const updatedUser = await db.update(users)
+    const updatedUser = await db
+      .update(users)
       .set({
         name: body.name,
         username: body.username,
@@ -96,12 +86,12 @@ export async function PUT(
       })
       .where(eq(users.id, id))
       .returning();
-    
+
     return NextResponse.json(updatedUser[0]);
   } catch (error) {
-    console.error('Error updating user:', error);
+    console.error("Error updating user:", error);
     return NextResponse.json(
-      { error: 'Failed to update user' },
+      { error: "Failed to update user" },
       { status: 500 }
     );
   }
@@ -110,37 +100,31 @@ export async function PUT(
 // PATCH /api/users/:id - Partially update a user
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const id = parseInt(params.id);
-    
+    const id = parseInt((await params).id);
+
     if (isNaN(id)) {
-      return NextResponse.json(
-        { error: 'Invalid user ID' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "Invalid user ID" }, { status: 400 });
     }
-    
+
     const body = await request.json();
-    
+
     // Check if user exists
     const existingUser = await db.query.users.findFirst({
       where: eq(users.id, id),
     });
-    
+
     if (!existingUser) {
-      return NextResponse.json(
-        { error: 'User not found' },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
-    
+
     // Prepare update data (only include fields that are provided)
     const updateData: any = {
       updatedAt: new Date(),
     };
-    
+
     if (body.name !== undefined) updateData.name = body.name;
     if (body.username !== undefined) updateData.username = body.username;
     if (body.email !== undefined) updateData.email = body.email;
@@ -152,21 +136,24 @@ export async function PATCH(
     if (body.zipcode !== undefined) updateData.zipcode = body.zipcode;
     if (body.lat !== undefined) updateData.lat = body.lat;
     if (body.lng !== undefined) updateData.lng = body.lng;
-    if (body.companyName !== undefined) updateData.companyName = body.companyName;
-    if (body.companyCatchPhrase !== undefined) updateData.companyCatchPhrase = body.companyCatchPhrase;
+    if (body.companyName !== undefined)
+      updateData.companyName = body.companyName;
+    if (body.companyCatchPhrase !== undefined)
+      updateData.companyCatchPhrase = body.companyCatchPhrase;
     if (body.companyBs !== undefined) updateData.companyBs = body.companyBs;
-    
+
     // Update user
-    const updatedUser = await db.update(users)
+    const updatedUser = await db
+      .update(users)
       .set(updateData)
       .where(eq(users.id, id))
       .returning();
-    
+
     return NextResponse.json(updatedUser[0]);
   } catch (error) {
-    console.error('Error updating user:', error);
+    console.error("Error updating user:", error);
     return NextResponse.json(
-      { error: 'Failed to update user' },
+      { error: "Failed to update user" },
       { status: 500 }
     );
   }
@@ -175,39 +162,33 @@ export async function PATCH(
 // DELETE /api/users/:id - Delete a user
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const id = parseInt(params.id);
-    
+    const id = parseInt((await params).id);
+
     if (isNaN(id)) {
-      return NextResponse.json(
-        { error: 'Invalid user ID' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "Invalid user ID" }, { status: 400 });
     }
-    
+
     // Check if user exists
     const existingUser = await db.query.users.findFirst({
       where: eq(users.id, id),
     });
-    
+
     if (!existingUser) {
-      return NextResponse.json(
-        { error: 'User not found' },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
-    
+
     // Delete user
     await db.delete(users).where(eq(users.id, id));
-    
+
     // Return empty object (JSONPlaceholder style)
     return NextResponse.json({});
   } catch (error) {
-    console.error('Error deleting user:', error);
+    console.error("Error deleting user:", error);
     return NextResponse.json(
-      { error: 'Failed to delete user' },
+      { error: "Failed to delete user" },
       { status: 500 }
     );
   }
