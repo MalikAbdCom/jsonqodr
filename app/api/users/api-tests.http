@@ -1,0 +1,56 @@
+### API Tests for JSONPlaceholder Clone
+@baseUrl = http://localhost:3000/api/users
+@contentType = application/json
+
+### GET all users
+GET {{baseUrl}}
+
+### GET users with limit
+GET {{baseUrl}}?_limit=2
+
+### GET user by ID
+GET {{baseUrl}}/1
+
+### POST - Create a new user
+POST {{baseUrl}}
+Content-Type: {{contentType}}
+
+{
+  "name": "John Doe",
+  "username": "johndoe",
+  "email": "john@example.com",
+  "phone": "1-770-736-8031",
+  "website": "johndoe.com",
+  "street": "123 Main St",
+  "city": "New York",
+  "zipcode": "10001",
+  "companyName": "Acme Inc"
+}
+
+### PUT - Update a user (full update)
+PUT {{baseUrl}}/1
+Content-Type: {{contentType}}
+
+{
+  "name": "John Updated",
+  "username": "johnupdated",
+  "email": "john.updated@example.com",
+  "phone": "1-770-736-8032",
+  "website": "johnupdated.com",
+  "street": "456 Updated St",
+  "city": "Boston",
+  "zipcode": "02101",
+  "companyName": "Updated Inc"
+}
+
+### PATCH - Partially update a user
+PATCH {{baseUrl}}/1
+Content-Type: {{contentType}}
+
+{
+  "name": "John Patched",
+  "website": "johnpatched.com"
+}
+
+### DELETE - Delete a user
+DELETE {{baseUrl}}/1
